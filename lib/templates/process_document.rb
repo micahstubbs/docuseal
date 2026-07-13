@@ -11,11 +11,13 @@ module Templates
     CONCURRENCY = 2
     Q = 95
     JPEG_Q = ENV.fetch('PAGE_QUALITY', '35').to_i
-    MAX_WIDTH = 1400
+    # raise per deploy (e.g. 2200 for ~260 DPI builder previews) at the cost of
+    # larger cached preview blobs and render CPU
+    MAX_WIDTH = ENV.fetch('PAGE_MAX_WIDTH', '1400').to_i
     MAX_NUMBER_OF_PAGES_PROCESSED = 15
     MAX_FLATTEN_FILE_SIZE = 20.megabytes
     GENERATE_PREVIEW_SIZE_LIMIT = 50.megabytes
-    US_LETTER_SIZE = { 'width' => MAX_WIDTH, 'height' => 1812 }.freeze
+    US_LETTER_SIZE = { 'width' => MAX_WIDTH, 'height' => (MAX_WIDTH * 1812 / 1400) }.freeze
 
     module_function
 
