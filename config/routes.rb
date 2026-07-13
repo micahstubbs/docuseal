@@ -118,6 +118,7 @@ Rails.application.routes.draw do
     resource :share_link_qr, only: %i[show], controller: 'templates_share_link_qr'
     resources :recipients, only: %i[create], controller: 'templates_recipients'
     resources :prefillable_fields, only: %i[create], controller: 'templates_prefillable_fields'
+    resource :quick_send, only: %i[show create], controller: 'templates_quick_send'
     resources :submissions_export, only: %i[index new]
   end
   resources :preview_document_page, only: %i[show], path: '/preview/:signed_key'

@@ -506,6 +506,17 @@ en: &en
   there_are_no_submissions: There are no Submissions
   send_an_invitation_to_fill_and_complete_the_form: Send an invitation to fill and complete the form
   send_to_recipients: Send to Recipients
+  quick_send: Quick Send
+  send_now: Send Now
+  recipient_email: Recipient Email
+  all_fields_have_defaults: All fields have defaults or are auto-fillable.
+  some_fields_require_manual_input: Some required fields do not have default values.
+  auto_filled_fields: Auto-filled Fields
+  filled_by_recipient: Filled by recipient
+  submission_has_been_sent: Submission has been sent.
+  required: Required
+  type: Type
+  the_invitation_will_be_sent_to_the_first_party_only: This template has multiple parties — the invitation will be sent to the first party only.
   sign_it_yourself: Sign it Yourself
   api_and_embedding: API and Embedding
   template_id: Template ID
