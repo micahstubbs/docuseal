@@ -65,6 +65,17 @@ document.addEventListener('turbo:before-cache', () => {
   window.flash?.remove()
 })
 
+window.toggleDocusealTheme = function () {
+  const theme = document.documentElement.getAttribute('data-theme') === 'docuseal-dark' ? 'docuseal' : 'docuseal-dark'
+
+  localStorage.setItem('ds-theme', theme)
+  document.documentElement.setAttribute('data-theme', theme)
+}
+
+document.addEventListener('click', (e) => {
+  if (e.target.closest('#theme_toggle_button')) window.toggleDocusealTheme()
+})
+
 document.addEventListener('keyup', (e) => {
   if (e.code === 'Escape') {
     document.activeElement?.blur()
