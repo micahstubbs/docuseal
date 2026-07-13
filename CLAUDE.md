@@ -2,6 +2,23 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## White-label branding rules (DocuSeal)
+
+This fork is white-labeled as **DocuSeal** and deployed at
+https://docuseal.com. Two hard rules when touching branding:
+
+1. **AGPL §7(b) attribution**: `LICENSE_ADDITIONAL_TERMS` requires retaining
+   DocuSeal attribution in interactive user interfaces. Keep the
+   "Powered by DocuSeal" lines (`shared/_powered_by.html.erb`,
+   `shared/_email_attribution.html.erb`, `submission_form/completed.vue`).
+2. **Link-text honesty**: never render link display text naming one
+   product/domain while the `href` points at another. "DocuSeal" must
+   never be the anchor text of a docuseal.com link. Attribution links keep the
+   upstream name as display text: `powered by <a href="https://www.docuseal.com">DocuSeal</a>`.
+   Email footer canonical form: `Sent from DocuSeal and powered by DocuSeal(link)`.
+
+References to DocuSeal Pro / Console / MCP commercial offerings stay unchanged.
+
 
 ### Using bv as an AI sidecar
 
