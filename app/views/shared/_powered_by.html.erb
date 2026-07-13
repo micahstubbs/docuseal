@@ -9,5 +9,6 @@
   <% else %>
     <%= t('powered_by') %>
   <% end %>
-  <a href="<%= Docuseal::PRODUCT_URL %><%= local_assigns[:link_path] %>" class="underline"><%= Docuseal.product_name %></a> - <%= t('open_source_documents_software') %>
+  <%# AGPL §7(b) additional term: retain DocuSeal attribution in interactive UIs %>
+  <a href="<%= Docuseal::PRODUCT_URL %><%= local_assigns[:link_path] %>" class="underline">DocuSeal</a> - <%= t('open_source_documents_software') %>
 </div>
