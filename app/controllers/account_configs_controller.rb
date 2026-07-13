@@ -22,6 +22,7 @@ class AccountConfigsController < ApplicationController
     AccountConfig::ENFORCE_SIGNING_ORDER_KEY,
     AccountConfig::WITH_FILE_LINKS_KEY,
     AccountConfig::WITH_SIGNATURE_ID,
+    AccountConfig::WITH_COMPLETION_WATERMARK_KEY,
     AccountConfig::COMBINE_PDF_RESULT_KEY,
     AccountConfig::REQUIRE_SIGNING_REASON_KEY,
     AccountConfig::DOCUMENT_FILENAME_FORMAT_KEY,
