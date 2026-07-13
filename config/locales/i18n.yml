@@ -412,6 +412,8 @@ en: &en
   unreachable: Unreachable
   set_paperless_ngx_url_and_paperless_ngx_token_environment_variables_to_enable: Set PAPERLESS_NGX_URL and PAPERLESS_NGX_TOKEN environment variables to enable.
   signed_documents_are_automatically_uploaded_to_paperless_ngx_when_all_parties_complete_signing: Signed documents are automatically uploaded to Paperless-ngx when all parties complete signing.
+  set_twenty_crm_url_twenty_crm_api_key_and_twenty_crm_file_field_metadata_id_environment_variables_to_enable: Set TWENTY_CRM_URL, TWENTY_CRM_API_KEY, and TWENTY_CRM_FILE_FIELD_METADATA_ID environment variables to enable.
+  signed_documents_are_automatically_uploaded_to_twenty_crm_when_all_parties_complete_signing: Signed documents are automatically uploaded to Twenty CRM when all parties complete signing.
   teams: Teams
   tenants: Tenants
   send_signature_requests_via_sms: Send signature requests via SMS
@@ -552,6 +554,11 @@ en: &en
   new_user: New User
   unarchive: Unarchive
   last_session: Last session
+  accepted: Accepted
+  invitation_pending: Invitation Pending
+  invitation_expired: Invitation Expired
+  invitation_expires_at: 'Invitation link expires: %{time}'
+  resend_invitation: Resend Invitation
   unlock_more_user_roles_with_docuseal_pro: Unlock more user roles with DocuSeal Pro.
   view_active: View Active
   team_account: Team account
