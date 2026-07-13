@@ -23,6 +23,16 @@ must_exist:
     why: regression spec for SMTP_FROM KeyError guard (docuseal-y35)
   - path: spec/lib/attachment_preview_src_spec.rb
     why: regression spec for expiring preview URLs (docuseal-8bt)
+  - path: lib/submissions/upload_to_paperless.rb
+    why: paperless-ngx archival integration (docuseal-v3r)
+  - path: lib/submissions/upload_to_twenty.rb
+    why: Twenty CRM upload integration (docuseal-v5t)
+  - path: app/controllers/documents_controller.rb
+    why: Documents unified view (docuseal-36y)
+  - path: app/controllers/email_smtp_settings_test_controller.rb
+    why: Send Test Email button (docuseal-wwt)
+  - path: app/controllers/templates_quick_send_controller.rb
+    why: Quick Send modal (docuseal-8xy)
 
 must_contain:
   config/storage.yml:
