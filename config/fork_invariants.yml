@@ -1,0 +1,60 @@
+# Fork invariants for micahstubbs/docuseal (DocuSeal).
+#
+# Checked by bin/fork-check (CI and pre-push). Each entry documents WHY it
+# exists so an upstream sync that violates it can be resolved deliberately
+# instead of silently shipping a regression. Pattern adapted from
+# wabolabs/wabosign's fork-invariants guard.
+#
+# Sections:
+#   must_exist        - fork-added files that an upstream merge must not delete
+#   must_contain      - file => list of {marker, why} the file must include
+#   must_not_contain  - file => list of {marker, why} the file must NOT include
+
+must_exist:
+  - path: config/fork_invariants.yml
+    why: the guard itself
+  - path: bin/fork-check
+    why: the guard itself
+  - path: spec/config/storage_config_spec.rb
+    why: regression spec for R2/MinIO checksum compatibility (docuseal-pho)
+  - path: spec/config/devise_lockable_spec.rb
+    why: regression spec for sign-in brute-force lockout (docuseal-ml1)
+  - path: spec/lib/action_mailer_configs_interceptor_spec.rb
+    why: regression spec for SMTP_FROM KeyError guard (docuseal-y35)
+  - path: spec/lib/attachment_preview_src_spec.rb
+    why: regression spec for expiring preview URLs (docuseal-8bt)
+
+must_contain:
+  config/storage.yml:
+    - marker: "request_checksum_calculation: 'when_required'"
+      why: R2/MinIO/B2 reject aws-sdk v3 CRC32 checksums (docuseal-pho)
+    - marker: "response_checksum_validation: 'when_required'"
+      why: R2/MinIO/B2 reject aws-sdk v3 CRC32 checksums (docuseal-pho)
+  config/initializers/devise.rb:
+    - marker: 'config.lock_strategy = :failed_attempts'
+      why: brute-force lockout on public sign-in endpoint (docuseal-ml1)
+  lib/action_mailer_configs_interceptor.rb:
+    - marker: 'return message if from.blank?'
+      why: SMTP_FROM unset must not crash mail delivery (docuseal-y35)
+  config/initializers/active_storage.rb:
+    - marker: 'def preview_src'
+      why: non-expiring preview URLs for private storage (docuseal-8bt)
+  lib/templates/process_document.rb:
+    - marker: "ENV.fetch('PAGE_MAX_WIDTH'"
+      why: configurable preview render width (docuseal-lb2)
+  lib/puma/plugin/sidekiq_embed.rb:
+    - marker: 'sidekiq_config.dig(Rails.env.to_s, :max_retries)'
+      why: embedded sidekiq must honor production max_retries of 3 (docuseal-ur1)
+  config/initializers/sidekiq.rb:
+    - marker: 'death_handlers'
+      why: dead jobs must be logged, not silently dropped (docuseal-6np)
+
+must_not_contain:
+  app/jobs/process_submitter_completion_job.rb:
+    - marker: 'sub.completed_at.blank? && sub.sent_at.blank?'
+      why: reintroduces the next-signer stall in preserved order (docuseal-dtn)
+    - marker: "rescue ActiveRecord::RecordNotUnique\n    retry"
+      why: reintroduces unbounded retry loop (docuseal-ur1)
+  lib/action_mailer_configs_interceptor.rb:
+    - marker: "ENV.fetch('SMTP_FROM')"
+      why: unguarded fetch raises KeyError when SMTP_FROM unset (docuseal-y35)

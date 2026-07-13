@@ -1,0 +1,57 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Verifies the fork invariants declared in config/fork_invariants.yml.
+# Exits 1 listing every violation, so an upstream merge that deletes fork
+# files or reverts carried changes fails CI instead of shipping silently.
+#
+# Usage: bin/fork-check [root_dir]
+
+require 'yaml'
+
+root = ARGV[0] || File.expand_path('..', __dir__)
+config = YAML.safe_load_file(File.join(root, 'config/fork_invariants.yml'))
+
+violations = []
+
+(config['must_exist'] || []).each do |entry|
+  path = entry['path']
+
+  violations << "MISSING FILE #{path} — #{entry['why']}" unless File.exist?(File.join(root, path))
+end
+
+(config['must_contain'] || {}).each do |path, markers|
+  full = File.join(root, path)
+
+  unless File.exist?(full)
+    violations << "MISSING FILE #{path} (must_contain target)"
+    next
+  end
+
+  content = File.read(full)
+
+  markers.each do |entry|
+    violations << "MISSING MARKER in #{path}: #{entry['marker'].inspect} — #{entry['why']}" unless content.include?(entry['marker'])
+  end
+end
+
+(config['must_not_contain'] || {}).each do |path, markers|
+  full = File.join(root, path)
+
+  next unless File.exist?(full)
+
+  content = File.read(full)
+
+  markers.each do |entry|
+    violations << "FORBIDDEN MARKER in #{path}: #{entry['marker'].inspect} — #{entry['why']}" if content.include?(entry['marker'])
+  end
+end
+
+if violations.empty?
+  puts "fork-check: all #{(config['must_exist'] || []).size} files, " \
+       "#{(config['must_contain'] || {}).values.sum(&:size)} markers OK"
+else
+  warn "fork-check: #{violations.size} violation(s):"
+  violations.each { |v| warn "  - #{v}" }
+  exit 1
+end
