@@ -229,6 +229,13 @@ module Submissions
               { text: "#{I18n.t('result_sha256')}:\n", font: [FONT_NAME, { variant: :bold }] },
               document.metadata['sha256'] || document.checksum,
               "\n",
+              *(if document.metadata['watermark_sha256'].present?
+                  [{ text: "#{I18n.t('stamped_sha256')}:\n", font: [FONT_NAME, { variant: :bold }] },
+                   document.metadata['watermark_sha256'],
+                   "\n"]
+                else
+                  []
+                end),
               { text: "#{I18n.t('generated_at')}: ", font: [FONT_NAME, { variant: :bold }] },
               "#{I18n.l(document.created_at.in_time_zone(timezone), format: :long, locale: account.locale)} " \
               "#{TimeUtils.timezone_abbr(timezone, document.created_at)}"

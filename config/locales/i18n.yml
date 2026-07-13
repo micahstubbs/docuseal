@@ -706,6 +706,7 @@ en: &en
   testing_log_not_for_production_use: Testing Log - Not for Production Use
   original_sha256: Original SHA256
   result_sha256: Result SHA256
+  stamped_sha256: Stamped SHA-256
   generated_at: Generated at
   email_verification: Email verification
   phone_verification: Phone verification
@@ -1787,6 +1788,7 @@ es: &es
   testing_log_not_for_production_use: Registro de Pruebas - No para Uso en Producción
   original_sha256: SHA256 Original
   result_sha256: SHA256 del Resultado
+  stamped_sha256: SHA-256 Estampado
   generated_at: Generado el
   email_verification: Verificación de correo electrónico
   phone_verification: Verificación telefónica
@@ -2865,6 +2867,7 @@ it: &it
   testing_log_not_for_production_use: Registro di Test - Non per Uso in Produzione
   original_sha256: SHA256 Originale
   result_sha256: SHA256 del Risultato
+  stamped_sha256: SHA-256 Timbrato
   generated_at: Generato il
   email_verification: Verifica e-mail
   phone_verification: Verifica telefono
@@ -3943,6 +3946,7 @@ fr: &fr
   testing_log_not_for_production_use: Journal de test - Non destiné à la production
   original_sha256: SHA256 d’origine
   result_sha256: SHA256 du résultat
+  stamped_sha256: SHA-256 estampillé
   generated_at: Généré le
   email_verification: Vérification par e‑mail
   phone_verification: Vérification par téléphone
@@ -5018,6 +5022,7 @@ pt: &pt
   testing_log_not_for_production_use: Log de Teste - Não para Uso em Produção
   original_sha256: SHA256 Original
   result_sha256: SHA256 do Resultado
+  stamped_sha256: SHA-256 Carimbado
   generated_at: Gerado em
   email_verification: Verificação de E-mail
   phone_verification: Verificação de Telefone
@@ -6096,6 +6101,7 @@ de: &de
   testing_log_not_for_production_use: Testprotokoll - Nicht für den Produktionseinsatz
   original_sha256: Original-SHA256
   result_sha256: Ergebnis-SHA256
+  stamped_sha256: Gestempelter SHA-256
   generated_at: Generiert am
   email_verification: E-Mail-Verifizierung
   phone_verification: Telefonverifizierung
@@ -7579,6 +7585,7 @@ nl: &nl
   testing_log_not_for_production_use: Testlogboek - Niet voor productiegebruik
   original_sha256: Oorspronkelijke SHA256
   result_sha256: Resultaat SHA256
+  stamped_sha256: Gestempelde SHA-256
   generated_at: Gegenereerd op
   email_verification: E-mailverificatie
   phone_verification: Telefoonverificatie
