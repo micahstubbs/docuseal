@@ -905,6 +905,15 @@ en: &en
   tablet: Tablet
   reset_default: Reset default
   smtp_settings_have_been_reset: SMTP settings have been reset.
+  send_test_email: Send Test Email
+  test_email_has_been_sent_to: Test email has been sent to %{email}
+  please_configure_smtp_settings_first: Please configure SMTP settings first
+  please_enter_a_valid_email_address: Please enter a valid email address
+  failed_to_send_test_email: 'Failed to send test email: %{error}'
+  a_test_email_will_be_sent_to_this_address: A test email will be sent to this address to verify your SMTP configuration
+  smtp_test_email_subject: SMTP Test Email
+  this_is_a_test_email: This is a test email.
+  if_you_received_this_email_your_smtp_settings_are_working_correctly: If you received this email, your SMTP settings are working correctly.
   send_signature_request_email: Send signature request email
   last_3_months: Last 3 months
   last_6_months: Last 6 months

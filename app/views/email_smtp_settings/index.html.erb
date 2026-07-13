@@ -57,6 +57,15 @@
         <%= f.button button_title(title: t('save'), disabled_with: t('saving')), class: 'base-button' %>
       </div>
     <% end %>
+    <% if @encrypted_config.persisted? && @encrypted_config.value.present? %>
+      <div class="divider"></div>
+      <div class="form-control">
+        <%= link_to new_settings_email_test_path, id: 'send_test_email_button', class: 'btn btn-outline w-full', data: { turbo_frame: 'modal' } do %>
+          <%= svg_icon('mail', class: 'w-5 h-5') %>
+          <span><%= t('send_test_email') %></span>
+        <% end %>
+      </div>
+    <% end %>
     <% if Docuseal.multitenant? && @encrypted_config.persisted? %>
       <div class="flex justify-center pt-2">
         <%= button_to t('reset_default'), settings_email_path(@encrypted_config), method: :delete, class: 'link', data: { turbo_confirm: t('are_you_sure_') } %>
