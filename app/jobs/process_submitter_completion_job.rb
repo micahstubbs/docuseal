@@ -196,7 +196,7 @@ class ProcessSubmitterCompletionJob
 
           next unless sub
 
-          sub.completed_at.blank? && sub.sent_at.blank?
+          sub.completed_at.blank?
         end
       end
 

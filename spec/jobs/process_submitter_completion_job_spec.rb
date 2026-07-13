@@ -47,5 +47,45 @@ RSpec.describe ProcessSubmitterCompletionJob do
         described_class.new.perform('submitter_id' => 'invalid_id')
       end.to raise_error(ActiveRecord::RecordNotFound)
     end
+
+    context 'when submitters order is preserved' do
+      let(:template) { create(:template, account:, author: user, submitter_count: 2) }
+      let(:submission) do
+        create(:submission, template:, created_by_user: user, submitters_order: 'preserved')
+      end
+      let(:submitter) do
+        create(:submitter, submission:, uuid: submission.template_submitters.first['uuid'],
+                           completed_at: Time.current)
+      end
+
+      let!(:next_submitter) do
+        create(:submitter, submission:, uuid: submission.template_submitters.second['uuid'],
+                           email: 'next@example.com')
+      end
+
+      before { SendSubmitterInvitationEmailJob.jobs.clear }
+
+      it 'notifies the next incomplete submitter' do
+        described_class.new.perform('submitter_id' => submitter.id)
+
+        submitter_ids = SendSubmitterInvitationEmailJob.jobs.map { |j| j['args'].first['submitter_id'] }
+
+        expect(submitter_ids).to include(next_submitter.id)
+      end
+
+      # Regression: the next-submitter lookup required sent_at to be blank, so a
+      # pending submitter who had already been sent an invitation out-of-band was
+      # skipped and the sequential chain stalled (or a later party was notified
+      # out of order).
+      it 'notifies the next incomplete submitter even when sent_at is already set' do
+        next_submitter.update!(sent_at: 1.day.ago)
+
+        described_class.new.perform('submitter_id' => submitter.id)
+
+        submitter_ids = SendSubmitterInvitationEmailJob.jobs.map { |j| j['args'].first['submitter_id'] }
+
+        expect(submitter_ids).to include(next_submitter.id)
+      end
+    end
   end
 end
