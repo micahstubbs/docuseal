@@ -1,0 +1,51 @@
+---
+name: Sync canary
+on:
+  schedule:
+    - cron: '30 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  canary:
+    name: Simulate next upstream sync
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run sync canary
+        id: canary
+        run: |
+          set +e
+          ./bin/sync-canary | tee canary.out
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+      - name: Open or update warning issue
+        if: steps.canary.outputs.exit_code != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="sync-canary: next upstream sync needs attention"
+          body="$(printf 'The daily sync canary found problems simulating a merge of upstream/master:\n\n```\n%s\n```\n' "$(cat canary.out)")"
+          existing=$(gh issue list --state open --search "in:title sync-canary" --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body" --label sync-canary
+          fi
+      - name: Close warning issue when clean
+        if: steps.canary.outputs.exit_code == '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          existing=$(gh issue list --state open --search "in:title sync-canary" --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue close "$existing" --comment "sync-canary is clean again — the next upstream sync would merge without conflicts."
+          fi
+      - name: Fail job on findings
+        if: steps.canary.outputs.exit_code != '0'
+        run: exit 1

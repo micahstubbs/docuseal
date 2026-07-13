@@ -1,0 +1,26 @@
+# Upstream anchors that fork-carried changes integrate with, one per line:
+#   <file>::<required substring>
+# bin/sync-canary checks these against upstream/master. A missing anchor means
+# upstream moved or renamed code one of our carried changes depends on — the
+# change may stop applying (or stop making sense) silently on the next sync.
+# Pattern from Deenyoro/docuseal-sso.
+
+# next-signer fix + bounded retry (docuseal-dtn, docuseal-ur1)
+app/jobs/process_submitter_completion_job.rb::def enqueue_next_submitter_request_notification
+app/jobs/process_submitter_completion_job.rb::def create_completed_submitter!
+
+# embedded sidekiq max_retries resolution (docuseal-ur1)
+lib/puma/plugin/sidekiq_embed.rb::config.merge!(sidekiq_config)
+
+# SMTP_FROM guard location (docuseal-y35)
+lib/action_mailer_configs_interceptor.rb::def delivering_email
+
+# preview_src builds on the blob proxy + service_url_time (docuseal-8bt)
+config/initializers/active_storage.rb::def self.proxy_path
+config/initializers/active_storage.rb::def self.service_url_time
+
+# PAGE_MAX_WIDTH override target (docuseal-lb2)
+lib/templates/process_document.rb::MAX_WIDTH
+
+# lockable config target (docuseal-ml1)
+config/initializers/devise.rb::Configuration for :lockable
