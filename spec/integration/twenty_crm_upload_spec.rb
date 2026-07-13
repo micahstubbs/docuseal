@@ -6,7 +6,7 @@
 # It is skipped automatically when no instance is reachable.
 # It provisions a user, API key, and seed company, then verifies document upload.
 RSpec.describe 'Twenty CRM document upload', type: :integration do
-  let(:e2e_email) { 'e2e-test@docuseal.local' }
+  let(:e2e_email) { 'e2e-test@example.com' }
   let(:e2e_password) { 'TestPass123!@#' }
   let(:twenty_url) { ENV.fetch('TWENTY_CRM_URL', 'http://twenty-server:3000') }
   let(:account) { create(:account) }
@@ -124,7 +124,7 @@ RSpec.describe 'Twenty CRM document upload', type: :integration do
         activateWorkspace(data: { displayName: $displayName }) { id }
       }
     GQL
-    graphql_request(activate_query, variables: { displayName: 'DocuSeal E2E Test' },
+    graphql_request(activate_query, variables: { displayName: 'Example E2E Test' },
                                     token: result[:access_token])
 
     result

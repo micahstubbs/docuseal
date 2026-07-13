@@ -21,6 +21,7 @@
 #  fk_rails_...  (account_id => accounts.id)
 #
 class AccountConfig < ApplicationRecord
+  PRODUCT_NAME_KEY = 'product_name'
   SUBMITTER_INVITATION_EMAIL_KEY = 'submitter_invitation_email'
   SUBMITTER_VIEW_INVITATION_EMAIL_KEY = 'submitter_view_invitation_email'
   SUBMITTER_INVITATION_REMINDER_EMAIL_KEY = 'submitter_invitation_reminder_email'

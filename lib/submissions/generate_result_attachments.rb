@@ -34,7 +34,7 @@ module Submissions
       bold_italic: FONT_BOLD_NAME
     }.freeze
 
-    SIGN_REASON = 'Signed with docuseal.com'
+    SIGN_REASON = "Signed with #{Docuseal::PRODUCT_NAME}".freeze
 
     RTL_REGEXP = TextUtils::RTL_REGEXP
 

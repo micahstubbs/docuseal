@@ -1,4 +1,4 @@
-# Fork invariants for micahstubbs/docuseal (DocuSeal).
+# Fork invariants for micahstubbs/docuseal.
 #
 # Checked by bin/fork-check (CI and pre-push). Each entry documents WHY it
 # exists so an upstream sync that violates it can be resolved deliberately
@@ -58,8 +58,20 @@ must_contain:
   config/initializers/sidekiq.rb:
     - marker: 'death_handlers'
       why: dead jobs must be logged, not silently dropped (docuseal-6np)
+  lib/docuseal.rb:
+    - marker: "ENV.fetch('PRODUCT_NAME', DEFAULT_PRODUCT_NAME)"
+      why: product name must stay configurable, default DocuSeal (docuseal-492)
 
 must_not_contain:
+  lib/docuseal.rb:
+    - marker: 'DocuSeal'
+      why: white-label name must not be hardcoded (docuseal-492)
+  app/views/shared/_meta.html.erb:
+    - marker: 'DocuSeal'
+      why: white-label name must not be hardcoded (docuseal-492)
+  config/locales/i18n.yml:
+    - marker: 'DocuSeal'
+      why: white-label name must not be hardcoded (docuseal-492)
   app/jobs/process_submitter_completion_job.rb:
     - marker: 'sub.completed_at.blank? && sub.sent_at.blank?'
       why: reintroduces the next-signer stall in preserved order (docuseal-dtn)

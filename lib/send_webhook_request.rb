@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module SendWebhookRequest
-  USER_AGENT = 'DocuSeal Webhook'
+  USER_AGENT = "#{Docuseal::PRODUCT_NAME} Webhook".freeze
 
   LOCALHOSTS = DownloadUtils::LOCALHOSTS
 
