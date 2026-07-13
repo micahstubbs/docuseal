@@ -48,6 +48,23 @@ RSpec.describe ProcessSubmitterCompletionJob do
       end.to raise_error(ActiveRecord::RecordNotFound)
     end
 
+    # Regression: a bare `rescue ActiveRecord::RecordNotUnique / retry` could loop
+    # forever when the conflict is not resolved by re-reading.
+    it 'bounds RecordNotUnique retries instead of looping forever' do
+      job = described_class.new
+
+      allow(CompletedSubmitter).to receive(:find_or_initialize_by)
+        .and_raise(ActiveRecord::RecordNotUnique)
+      allow(job).to receive(:sleep)
+
+      expect do
+        job.create_completed_submitter!(submitter)
+      end.to raise_error(ActiveRecord::RecordNotUnique)
+
+      expect(CompletedSubmitter).to have_received(:find_or_initialize_by)
+        .exactly(described_class::MAX_RETRY_ATTEMPTS).times
+    end
+
     context 'when submitters order is preserved' do
       let(:template) { create(:template, account:, author: user, submitter_count: 2) }
       let(:submission) do

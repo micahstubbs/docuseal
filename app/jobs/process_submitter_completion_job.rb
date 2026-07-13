@@ -3,6 +3,8 @@
 class ProcessSubmitterCompletionJob
   include Sidekiq::Job
 
+  MAX_RETRY_ATTEMPTS = 5
+
   def perform(params = {})
     submitter = Submitter.find(params['submitter_id'])
     submission = submitter.submission
@@ -81,6 +83,12 @@ class ProcessSubmitterCompletionJob
 
     completed_submitter
   rescue ActiveRecord::RecordNotUnique
+    attempts = (attempts || 0) + 1
+
+    raise if attempts >= MAX_RETRY_ATTEMPTS
+
+    sleep(0.1 * attempts)
+
     retry
   end
 
