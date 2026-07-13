@@ -60,7 +60,8 @@ class SubmissionsController < ApplicationController
 
     SearchEntries.enqueue_reindex(submissions)
 
-    redirect_to template_path(@template), notice: I18n.t('new_recipients_have_been_added')
+    redirect_to documents_home_enabled? ? documents_path : template_path(@template),
+                notice: I18n.t('new_recipients_have_been_added')
   rescue Submissions::CreateFromSubmitters::BaseError => e
     render turbo_stream: turbo_stream.replace(:submitters_error, partial: 'submissions/error',
                                                                  locals: { error: e.message }),
@@ -81,7 +82,16 @@ class SubmissionsController < ApplicationController
         I18n.t('submission_has_been_archived')
       end
 
-    redirect_back(fallback_location: @submission.template_id ? template_path(@submission.template) : root_path, notice:)
+    fallback_location =
+      if documents_home_enabled?
+        documents_path
+      elsif @submission.template_id
+        template_path(@submission.template)
+      else
+        root_path
+      end
+
+    redirect_back(fallback_location:, notice:)
   end
 
   private

@@ -579,6 +579,9 @@ en: &en
   impersonate: Impersonate
   loading: Loading
   documents: Documents
+  drafts: Drafts
+  new_document: New Document
+  documents_not_found: Documents not Found
   accounts: Accounts
   edit_account: Edit Account
   new_team: New Team
