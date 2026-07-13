@@ -49,11 +49,9 @@ RSpec.describe Submissions::GenerateResultAttachments do
 
       expect(texts).not_to be_empty
 
-      texts.each do |text|
-        expect(text).to include("Document ID: #{document_id}")
-        expect(text).to include("Completed: #{timestamp}")
-        expect(text).to include("SHA-256: #{watermark_sha256}")
-      end
+      expect(texts).to all include("Document ID: #{document_id}")
+        .and(include("Completed: #{timestamp}"))
+        .and(include("SHA-256: #{watermark_sha256}"))
     end
 
     it 'does not stamp the watermark when the account config is disabled' do

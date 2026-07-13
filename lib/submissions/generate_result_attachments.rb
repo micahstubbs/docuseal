@@ -89,6 +89,10 @@ module Submissions
       pkcs = Accounts.load_signing_pkcs(account)
       tsa_url = Accounts.load_timeserver_url(account)
 
+      with_watermark =
+        submission.submitters.all?(&:completed_at?) &&
+        account.account_configs.find_by(key: AccountConfig::WITH_COMPLETION_WATERMARK_KEY)&.value != false
+
       image_pdfs = []
       original_documents = submission.schema_documents.preload(:blob)
 
@@ -104,7 +108,7 @@ module Submissions
             image_pdfs << pdf
           end
 
-          build_pdf_attachment(pdf:, submitter:, pkcs:, tsa_url:,
+          build_pdf_attachment(pdf:, submitter:, pkcs:, tsa_url:, with_watermark:,
                                uuid: item['attachment_uuid'],
                                name: item['name'])
         end
@@ -124,6 +128,7 @@ module Submissions
           submitter:,
           tsa_url:,
           pkcs:,
+          with_watermark:,
           uuid: images_pdf_uuid(original_documents.select(&:image?)),
           name: submission.name || submission.template&.name
         )
@@ -744,8 +749,10 @@ module Submissions
       pdfs_index
     end
 
-    def build_pdf_attachment(pdf:, submitter:, pkcs:, tsa_url:, uuid:, name:)
+    def build_pdf_attachment(pdf:, submitter:, pkcs:, tsa_url:, uuid:, name:, with_watermark: false)
       io = StringIO.new
+
+      watermark_sha256 = stamp_completion_watermark(pdf, submitter) if with_watermark
 
       pdf.trailer.info[:Creator] = info_creator
 
@@ -795,16 +802,84 @@ module Submissions
         end
       end
 
+      metadata = { original_uuid: uuid,
+                   analyzed: true,
+                   sha256: Base64.urlsafe_encode64(Digest::SHA256.digest(io.string)) }
+
+      metadata[:watermark_sha256] = watermark_sha256 if watermark_sha256
+
       ActiveStorage::Attachment.new(
         blob: ActiveStorage::Blob.create_and_upload!(io: io.tap(&:rewind), filename: "#{name}.pdf"),
-        metadata: { original_uuid: uuid,
-                    analyzed: true,
-                    sha256: Base64.urlsafe_encode64(Digest::SHA256.digest(io.string)) },
+        metadata:,
         name: 'documents',
         record: submitter
       )
     end
     # rubocop:enable Metrics
+
+    def stamp_completion_watermark(pdf, submitter)
+      return pdf.trailer.info[:CompletionWatermark] if pdf.trailer.info[:CompletionWatermark].present?
+
+      watermark_sha256 = Digest::SHA256.hexdigest(serialize_pdf(pdf).string)
+
+      pdf.trailer.info[:CompletionWatermark] = watermark_sha256
+
+      locale = submitter.metadata.fetch('lang', submitter.account.locale)
+
+      document_id = Digest::MD5.hexdigest(submitter.submission.slug).upcase
+      completed_at = (submitter.completed_at || Time.current).utc.strftime('%Y-%m-%d %H:%M:%S UTC')
+
+      first_line = "#{I18n.t('document_id', locale:)}: #{document_id} | " \
+                   "#{I18n.t('completed', locale:)}: #{completed_at}"
+      second_line = "SHA-256: #{watermark_sha256}"
+
+      draw_watermark_lines(pdf, [second_line, first_line])
+
+      watermark_sha256
+    end
+
+    def draw_watermark_lines(pdf, lines)
+      font = pdf.fonts.add(FONT_NAME)
+
+      pdf.pages.each do |page|
+        font_size = [(([page.box.width, page.box.height].min / A4_SIZE[0].to_f) * 9).to_i, 4].max
+        cnv = page.canvas(type: :overlay)
+
+        line_height = font_size * 1.37
+        base_y = pdf.trailer.info[:DocumentID].present? ? line_height : 0
+
+        lines.each_with_index do |line, index|
+          fragment = HexaPDF::Layout::TextFragment.create(
+            line, font:, font_size:, underlays: [
+              lambda do |canv, box|
+                canv.fill_color('white').rectangle(-1, 0, box.width + 2, box.height).fill
+              end
+            ]
+          )
+
+          HexaPDF::Layout::TextLayouter.new(font:, font_size:)
+                                       .fit([fragment], page.box.width, page.box.height)
+                                       .draw(cnv, 1, base_y + (line_height * (index + 1)))
+        end
+      end
+    end
+
+    def serialize_pdf(pdf)
+      io = StringIO.new
+
+      begin
+        pdf.write(io, incremental: true, validate: false)
+      rescue HexaPDF::Error, NoMethodError
+        begin
+          pdf.write(io, incremental: false, validate: false)
+        rescue HexaPDF::Error
+          pdf.validate(auto_correct: true)
+          pdf.write(io, incremental: false, validate: false)
+        end
+      end
+
+      io
+    end
 
     def maybe_enable_ltv(io, _sign_params)
       io
