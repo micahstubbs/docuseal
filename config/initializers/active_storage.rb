@@ -20,6 +20,17 @@ ActiveSupport.on_load(:active_storage_attachment) do
   def signed_key
     @signed_key ||= ApplicationRecord.signed_id_verifier.generate([id, uuid], expires_in: 6.hours, purpose: :attachment)
   end
+
+  # Presigned service URLs expire (PRESIGNED_URLS_EXPIRE_MINUTES, default 4h),
+  # which breaks preview/signature images on long-open or cached pages when
+  # storage is private. Serve them through the non-expiring blob proxy on
+  # self-hosted private storage; keep direct CDN-cacheable service URLs for
+  # multitenant and public storage.
+  def preview_src
+    return url(time: self.class.service_url_time) if Docuseal.multitenant? || blob.service.try(:public?)
+
+    ActiveStorage::Blob.proxy_path(blob)
+  end
 end
 
 # rubocop:disable Metrics/BlockLength
