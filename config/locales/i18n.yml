@@ -407,6 +407,11 @@ en: &en
   ai_assistant: AI Assistant
   discord_community: Discord Community
   integrations: Integrations
+  not_configured: Not Configured
+  connected: Connected
+  unreachable: Unreachable
+  set_paperless_ngx_url_and_paperless_ngx_token_environment_variables_to_enable: Set PAPERLESS_NGX_URL and PAPERLESS_NGX_TOKEN environment variables to enable.
+  signed_documents_are_automatically_uploaded_to_paperless_ngx_when_all_parties_complete_signing: Signed documents are automatically uploaded to Paperless-ngx when all parties complete signing.
   teams: Teams
   tenants: Tenants
   send_signature_requests_via_sms: Send signature requests via SMS

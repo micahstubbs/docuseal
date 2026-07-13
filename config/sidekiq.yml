@@ -3,6 +3,7 @@ queues:
   - [webhooks, 1]
   - [sms, 2]
   - [images, 1]
+  - [integrations, 1]
   - [mailers, 1]
   - [recurrent, 1]
   - [rollbar, 1]

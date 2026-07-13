@@ -34,6 +34,10 @@ class ProcessSubmitterCompletionJob
       Submissions::EnsureAuditGenerated.call(submission)
 
       enqueue_completed_emails(submitter)
+
+      if Submissions::UploadToPaperless.configured?
+        UploadToPaperlessJob.perform_async('submission_id' => submitter.submission_id)
+      end
     end
 
     create_completed_documents!(submitter)
