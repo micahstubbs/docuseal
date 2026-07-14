@@ -29,7 +29,7 @@ RSpec.describe SendSubmissionArchivedWebhookRequestJob do
         },
         headers: {
           'Content-Type' => 'application/json',
-          'User-Agent' => 'DocuSeal.com Webhook'
+          'User-Agent' => SendWebhookRequest::USER_AGENT
         }
       ).once
     end
@@ -47,7 +47,7 @@ RSpec.describe SendSubmissionArchivedWebhookRequestJob do
         },
         headers: {
           'Content-Type' => 'application/json',
-          'User-Agent' => 'DocuSeal.com Webhook',
+          'User-Agent' => SendWebhookRequest::USER_AGENT,
           'X-Secret-Header' => 'secret_value'
         }
       ).once

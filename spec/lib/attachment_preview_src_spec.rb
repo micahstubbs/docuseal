@@ -23,7 +23,15 @@ RSpec.describe 'ActiveStorage::Attachment#preview_src' do
   end
 
   context 'when multitenant' do
-    before { allow(Docuseal).to receive(:multitenant?).and_return(true) }
+    before do
+      allow(Docuseal).to receive(:multitenant?).and_return(true)
+
+      # Direct service URLs need url_options outside the request cycle
+      # (the Disk service raises without them).
+      ActiveStorage::Current.url_options = { host: 'test.host' }
+    end
+
+    after { ActiveStorage::Current.url_options = nil }
 
     it 'returns the direct service url' do
       expect(attachment.preview_src).not_to start_with('/file/')

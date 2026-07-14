@@ -80,7 +80,16 @@ RSpec.describe ProcessSubmitterCompletionJob do
                            email: 'next@example.com')
       end
 
-      before { SendSubmitterInvitationEmailJob.jobs.clear }
+      before do
+        # The outer `maybe_update_completed_at` hook runs before `let!(:next_submitter)`
+        # exists, so it wrongly stamps the submission as completed. With a pending
+        # party the submission must not be completed yet — restore that state.
+        # reload: the stamp came from update_all, so the in-memory object still
+        # has nil and a plain update!(completed_at: nil) would be a no-op.
+        submission.reload.update!(completed_at: nil)
+
+        SendSubmitterInvitationEmailJob.jobs.clear
+      end
 
       it 'notifies the next incomplete submitter' do
         described_class.new.perform('submitter_id' => submitter.id)
