@@ -28,12 +28,14 @@ case "$1" in
       ruby:4.0.5-alpine sleep infinity
     docker exec $APP sh -c '
       set -e
-      apk add --no-cache build-base git libpq-dev yaml-dev libpq vips onnxruntime leptonica wget unzip shared-mime-info tzdata
+      apk add --no-cache build-base git libpq-dev yaml-dev libpq vips onnxruntime leptonica wget unzip shared-mime-info tzdata nodejs yarn chromium
       wget -q -O /tmp/pdfium.zip "https://github.com/docusealco/pdfium-binaries/releases/download/20260613/pdfium-musl-$(uname -m).zip"
       unzip -q -o /tmp/pdfium.zip -d /tmp/pdfium && cp /tmp/pdfium/lib/libpdfium.so /usr/lib/libpdfium.so
       bundle install --jobs 4 --retry 2
       ln -sf /usr/lib/libonnxruntime.so.1 "$(ruby -e "print Dir[Gem::Specification.find_by_name('"'"'onnxruntime'"'"').gem_dir + '"'"'/vendor/*.so'"'"'].first")" || true
       bundle exec rake db:create db:migrate
+      yarn install --frozen-lockfile
+      NODE_ENV=test bundle exec rake assets:precompile
     '
     ;;
   rspec)
