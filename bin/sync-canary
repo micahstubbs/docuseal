@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+# Simulate the next upstream sync before anyone presses the button.
+#
+#   1. fetch upstream (docusealco/docuseal) master
+#   2. trial-merge it into HEAD in a throwaway worktree; report conflicts
+#   3. run bin/fork-check on the merged tree — do carried changes survive?
+#   4. verify config/upstream_fingerprints.txt anchors still exist upstream
+#
+# Exits 0 when a sync would be clean, 1 with a findings report otherwise.
+# Pattern from Deenyoro/docuseal-sso's daily sync canary.
+set -uo pipefail
+
+UPSTREAM_URL=${UPSTREAM_URL:-https://github.com/docusealco/docuseal.git}
+UPSTREAM_REF=${UPSTREAM_REF:-master}
+findings=()
+
+cd "$(git rev-parse --show-toplevel)"
+
+if git remote get-url upstream >/dev/null 2>&1; then
+  git fetch --quiet upstream "$UPSTREAM_REF"
+else
+  git fetch --quiet "$UPSTREAM_URL" "$UPSTREAM_REF:refs/remotes/upstream/$UPSTREAM_REF" -f
+fi
+
+upstream_sha=$(git rev-parse "refs/remotes/upstream/$UPSTREAM_REF")
+behind=$(git rev-list --count "HEAD..refs/remotes/upstream/$UPSTREAM_REF")
+echo "sync-canary: upstream/$UPSTREAM_REF = ${upstream_sha:0:10}, $behind commits ahead of us"
+
+# --- fingerprint anchors against the upstream tree -------------------------
+while IFS= read -r line; do
+  case "$line" in ''|'#'*) continue ;; esac
+
+  file=${line%%::*}
+  marker=${line#*::}
+
+  if ! git show "refs/remotes/upstream/$UPSTREAM_REF:$file" 2>/dev/null | grep -qF -- "$marker"; then
+    findings+=("FINGERPRINT: $file no longer contains '$marker' upstream")
+  fi
+done < config/upstream_fingerprints.txt
+
+# --- trial merge in a throwaway worktree -----------------------------------
+tmpdir=$(mktemp -d)
+trap 'git worktree remove --force "$tmpdir" >/dev/null 2>&1; rm -rf "$tmpdir"' EXIT
+
+git worktree add --detach --quiet "$tmpdir" HEAD
+
+conflicts=$(
+  cd "$tmpdir" &&
+    git merge --no-commit --no-ff "refs/remotes/upstream/$UPSTREAM_REF" >/dev/null 2>&1
+  git -C "$tmpdir" diff --name-only --diff-filter=U
+)
+
+if [ -n "$conflicts" ]; then
+  while IFS= read -r f; do
+    findings+=("CONFLICT: $f")
+  done <<< "$conflicts"
+fi
+
+# fork-check on the merged tree (conflicted files keep markers; still informative)
+if ! ruby bin/fork-check "$tmpdir" >/dev/null 2>&1; then
+  while IFS= read -r v; do
+    [ -n "$v" ] && findings+=("POST-MERGE $v")
+  done < <(ruby bin/fork-check "$tmpdir" 2>&1 | grep '^  - ' | sed 's/^  - //')
+fi
+
+# --- report -----------------------------------------------------------------
+if [ ${#findings[@]} -eq 0 ]; then
+  echo "sync-canary: clean — a sync of $behind upstream commits would merge without conflicts"
+  echo "sync-canary: all fingerprints present, fork invariants survive the merge"
+  exit 0
+fi
+
+echo "sync-canary: ${#findings[@]} finding(s):"
+printf '  - %s\n' "${findings[@]}"
+exit 1

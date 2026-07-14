@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html data-theme="docuseal" lang="<%= I18n.locale %>">
   <head>
+    <script nonce="<%= content_security_policy_nonce %>">document.documentElement.setAttribute('data-theme', localStorage.getItem('ds-theme') || 'docuseal')</script>
     <%= render 'layouts/head_tags' %>
     <% if Docuseal.enable_pwa? %>
       <link rel="manifest" href="/manifest.json">
     <% end %>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <%= csrf_meta_tags %>
+    <%= tag.meta name: 'csp-nonce', content: content_security_policy_nonce %>
     <% if ENV['ROLLBAR_CLIENT_TOKEN'] %>
       <meta name="rollbar-token" content="<%= ENV.fetch('ROLLBAR_CLIENT_TOKEN', nil) %>">
       <%= javascript_pack_tag 'rollbar', 'application', defer: true %>

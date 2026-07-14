@@ -1,0 +1,28 @@
+<div class="mt-8 mb-4" id="paperless_status">
+  <h2 class="text-3xl font-bold mb-4">
+    Paperless-ngx
+  </h2>
+  <div class="flex items-center space-x-3">
+    <% if !@paperless_status[:configured] %>
+      <span class="badge badge-ghost"><%= t('not_configured') %></span>
+      <span class="text-sm opacity-70">
+        <%= t('set_paperless_ngx_url_and_paperless_ngx_token_environment_variables_to_enable') %>
+      </span>
+    <% elsif @paperless_status[:reachable] %>
+      <span class="badge badge-success"><%= t('connected') %></span>
+      <span class="text-sm opacity-70">
+        <%= @paperless_status[:url] %>
+      </span>
+    <% else %>
+      <span class="badge badge-error"><%= t('unreachable') %></span>
+      <span class="text-sm opacity-70">
+        <%= @paperless_status[:url] %> — <%= @paperless_status[:error] %>
+      </span>
+    <% end %>
+  </div>
+  <% if @paperless_status[:configured] %>
+    <p class="text-sm opacity-70 mt-2">
+      <%= t('signed_documents_are_automatically_uploaded_to_paperless_ngx_when_all_parties_complete_signing') %>
+    </p>
+  <% end %>
+</div>

@@ -5,7 +5,10 @@ module Docuseal
   PRODUCT_EMAIL_URL = ENV.fetch('PRODUCT_EMAIL_URL', PRODUCT_URL)
   NEWSLETTER_URL = "#{PRODUCT_URL}/newsletters".freeze
   ENQUIRIES_URL = "#{PRODUCT_URL}/enquiries".freeze
-  PRODUCT_NAME = 'DocuSeal'
+  DEFAULT_PRODUCT_NAME = 'DocuSeal'
+  # White-label name. Set the PRODUCT_NAME env var, or leave it unset and store
+  # a value at runtime via the account config (see Docuseal.product_name).
+  PRODUCT_NAME = ENV.fetch('PRODUCT_NAME', DEFAULT_PRODUCT_NAME)
   DEFAULT_APP_URL = ENV.fetch('APP_URL', 'http://localhost:3000')
   GITHUB_URL = 'https://github.com/docusealco/docuseal'
   DISCORD_URL = 'https://discord.gg/qygYCDGck9'
@@ -115,8 +118,24 @@ module Docuseal
     end
   end
 
+  # Resolution order for the white-label product name:
+  #   1. PRODUCT_NAME env var (deploy-time)
+  #   2. a value stored in the account config (runtime, settable by the user)
+  #   3. the DocuSeal default
   def product_name
-    PRODUCT_NAME
+    return PRODUCT_NAME if ENV.key?('PRODUCT_NAME')
+
+    @product_name ||=
+      begin
+        configured = AccountConfig.find_by(key: AccountConfig::PRODUCT_NAME_KEY)&.value.presence if defined?(AccountConfig) && AccountConfig.table_exists?
+        configured || DEFAULT_PRODUCT_NAME
+      rescue ActiveRecord::StatementInvalid, ActiveRecord::NoDatabaseError
+        DEFAULT_PRODUCT_NAME
+      end
+  end
+
+  def refresh_product_name!
+    @product_name = nil
   end
 
   def refresh_default_url_options!

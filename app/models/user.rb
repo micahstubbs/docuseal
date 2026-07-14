@@ -121,4 +121,21 @@ class User < ApplicationRecord
       email
     end
   end
+
+  def invitation_status
+    return :accepted if sign_in_count.positive?
+    return :expired if reset_password_sent_at.blank?
+
+    if reset_password_sent_at > Devise.reset_password_within.ago
+      :pending
+    else
+      :expired
+    end
+  end
+
+  def invitation_expires_at
+    return nil if reset_password_sent_at.blank?
+
+    reset_password_sent_at + Devise.reset_password_within
+  end
 end

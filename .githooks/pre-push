@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Refuse pushes to the upstream parent repository (docusealco/*).
+#
+# Guards against the classic mistake of pushing a fork branch (or opening a
+# PR) against docusealco/docuseal when the `upstream` remote is configured.
+# Override deliberately with DOCUSEAL_ALLOW_UPSTREAM_PUSH=1.
+# Pattern from wabolabs/wabosign.
+
+remote="$1"
+url="$2"
+
+if [ "${DOCUSEAL_ALLOW_UPSTREAM_PUSH:-}" = "1" ]; then
+  exit 0
+fi
+
+case "$url" in
+  *docusealco/*)
+    echo "pre-push: refusing to push to upstream parent ($url)." >&2
+    echo "pre-push: set DOCUSEAL_ALLOW_UPSTREAM_PUSH=1 to override deliberately." >&2
+    exit 1
+    ;;
+esac
+
+exit 0

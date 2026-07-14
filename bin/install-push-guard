@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Install the pre-push guard for this clone (idempotent):
+#   1. routes git hooks to the tracked .githooks directory
+#   2. disables the push URL of any remote pointing at the upstream parent,
+#      which also defends against `git push --no-verify`
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+git config core.hooksPath .githooks
+chmod +x .githooks/pre-push
+echo "install-push-guard: core.hooksPath -> .githooks"
+
+for remote in $(git remote); do
+  url=$(git remote get-url "$remote")
+
+  if [[ "$url" == *docusealco/* ]]; then
+    current_push=$(git remote get-url --push "$remote")
+
+    if [ "$current_push" != "DISABLED" ]; then
+      git remote set-url --push "$remote" DISABLED
+      echo "install-push-guard: disabled push URL for remote '$remote' ($url)"
+    fi
+  fi
+done

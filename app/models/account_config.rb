@@ -21,6 +21,7 @@
 #  fk_rails_...  (account_id => accounts.id)
 #
 class AccountConfig < ApplicationRecord
+  PRODUCT_NAME_KEY = 'product_name'
   SUBMITTER_INVITATION_EMAIL_KEY = 'submitter_invitation_email'
   SUBMITTER_VIEW_INVITATION_EMAIL_KEY = 'submitter_view_invitation_email'
   SUBMITTER_INVITATION_REMINDER_EMAIL_KEY = 'submitter_invitation_reminder_email'
@@ -62,6 +63,7 @@ class AccountConfig < ApplicationRecord
   TEMPLATE_CUSTOM_FIELDS_KEY = 'template_custom_fields'
   POLICY_LINKS_KEY = 'policy_links'
   ENABLE_MCP_KEY = 'enable_mcp'
+  DOCUMENTS_HOME_KEY = 'documents_home'
 
   EMAIL_VARIABLES = {
     SUBMITTER_INVITATION_EMAIL_KEY => %w[template.name submitter.link account.name].freeze,

@@ -61,6 +61,7 @@ Rails.application.routes.draw do
   resources :encrypted_user_configs, only: %i[destroy]
   resources :timestamp_server, only: %i[create] unless Docuseal.multitenant?
   resources :dashboard, only: %i[index]
+  resources :documents, only: %i[index]
   resources :setup, only: %i[index create]
   resource :newsletter, only: %i[show update]
   resources :enquiries, only: %i[create]
@@ -121,6 +122,7 @@ Rails.application.routes.draw do
     resource :share_link_qr, only: %i[show], controller: 'templates_share_link_qr'
     resources :recipients, only: %i[create], controller: 'templates_recipients'
     resources :prefillable_fields, only: %i[create], controller: 'templates_prefillable_fields'
+    resource :quick_send, only: %i[show create], controller: 'templates_quick_send'
     resources :submissions_export, only: %i[index new]
   end
   resources :preview_document_page, only: %i[show], path: '/preview/:signed_key'
@@ -193,6 +195,7 @@ Rails.application.routes.draw do
       resource :reveal_access_token, only: %i[show create], controller: 'reveal_access_token'
     end
     resources :email, only: %i[index create destroy], controller: 'email_smtp_settings'
+    resources :email_test, only: %i[new create], controller: 'email_smtp_settings_test'
     resources :sso, only: %i[index], controller: 'sso_settings'
     resources :notifications, only: %i[index create], controller: 'notifications_settings'
     resource :esign, only: %i[show create new update destroy], controller: 'esign_settings'

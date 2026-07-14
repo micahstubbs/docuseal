@@ -12,3 +12,13 @@ if !ENV['SIDEKIQ_BASIC_AUTH_PASSWORD'].to_s.empty? && defined?(Sidekiq::Web)
 end
 
 Sidekiq.strict_args!
+
+Sidekiq.configure_server do |config|
+  config.death_handlers << lambda { |job, exception|
+    Rails.logger.error(
+      "Sidekiq job died: #{job['class']} #{job['jid']} args=#{job['args'].inspect}: #{exception.message}"
+    )
+
+    Rollbar.error(exception, job_class: job['class'], jid: job['jid']) if defined?(Rollbar)
+  }
+end

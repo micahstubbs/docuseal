@@ -1,0 +1,14 @@
+<%= render 'shared/turbo_modal', title: t('send_test_email') do %>
+  <%= form_with url: settings_email_test_index_path, method: :post, class: 'space-y-4', data: { turbo_frame: '_top' } do |f| %>
+    <div class="form-control">
+      <%= f.label :email, t('email'), class: 'label' %>
+      <%= f.email_field :email, value: current_user.email, required: true, autofocus: true, class: 'base-input', id: 'smtp_test_email_input' %>
+      <label class="label">
+        <span class="label-text-alt"><%= t('a_test_email_will_be_sent_to_this_address') %></span>
+      </label>
+    </div>
+    <div class="form-control pt-2">
+      <%= f.button button_title(title: t('send_test_email'), disabled_with: t('sending')), class: 'base-button' %>
+    </div>
+  <% end %>
+<% end %>

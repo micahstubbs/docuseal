@@ -107,6 +107,15 @@ class ApplicationController < ActionController::Base
     redirect_to setup_index_path unless User.exists?
   end
 
+  def documents_home_enabled?
+    return true if ENV['DOCUSEAL_DOCUMENTS_HOME'] == 'true'
+    return false unless signed_in?
+
+    AccountConfig.exists?(value: true,
+                          account_id: current_account.id,
+                          key: AccountConfig::DOCUMENTS_HOME_KEY)
+  end
+
   def button_title(title: I18n.t('submit'), disabled_with: I18n.t('submitting'), title_class: '', icon: nil,
                    icon_disabled: nil)
     render_to_string(partial: 'shared/button_title',

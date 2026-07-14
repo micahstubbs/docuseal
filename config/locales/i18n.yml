@@ -408,6 +408,13 @@ en: &en
   ai_assistant: AI Assistant
   discord_community: Discord Community
   integrations: Integrations
+  not_configured: Not Configured
+  connected: Connected
+  unreachable: Unreachable
+  set_paperless_ngx_url_and_paperless_ngx_token_environment_variables_to_enable: Set PAPERLESS_NGX_URL and PAPERLESS_NGX_TOKEN environment variables to enable.
+  signed_documents_are_automatically_uploaded_to_paperless_ngx_when_all_parties_complete_signing: Signed documents are automatically uploaded to Paperless-ngx when all parties complete signing.
+  set_twenty_crm_url_twenty_crm_api_key_and_twenty_crm_file_field_metadata_id_environment_variables_to_enable: Set TWENTY_CRM_URL, TWENTY_CRM_API_KEY, and TWENTY_CRM_FILE_FIELD_METADATA_ID environment variables to enable.
+  signed_documents_are_automatically_uploaded_to_twenty_crm_when_all_parties_complete_signing: Signed documents are automatically uploaded to Twenty CRM when all parties complete signing.
   teams: Teams
   tenants: Tenants
   send_signature_requests_via_sms: Send signature requests via SMS
@@ -500,6 +507,17 @@ en: &en
   there_are_no_submissions: There are no Submissions
   send_an_invitation_to_fill_and_complete_the_form: Send an invitation to fill and complete the form
   send_to_recipients: Send to Recipients
+  quick_send: Quick Send
+  send_now: Send Now
+  recipient_email: Recipient Email
+  all_fields_have_defaults: All fields have defaults or are auto-fillable.
+  some_fields_require_manual_input: Some required fields do not have default values.
+  auto_filled_fields: Auto-filled Fields
+  filled_by_recipient: Filled by recipient
+  submission_has_been_sent: Submission has been sent.
+  required: Required
+  type: Type
+  the_invitation_will_be_sent_to_the_first_party_only: This template has multiple parties — the invitation will be sent to the first party only.
   sign_it_yourself: Sign it Yourself
   api_and_embedding: API and Embedding
   template_id: Template ID
@@ -548,6 +566,11 @@ en: &en
   new_user: New User
   unarchive: Unarchive
   last_session: Last session
+  accepted: Accepted
+  invitation_pending: Invitation Pending
+  invitation_expired: Invitation Expired
+  invitation_expires_at: 'Invitation link expires: %{time}'
+  resend_invitation: Resend Invitation
   unlock_more_user_roles_with_docuseal_pro: Unlock more user roles with DocuSeal Pro.
   view_active: View Active
   team_account: Team account
@@ -557,6 +580,9 @@ en: &en
   impersonate: Impersonate
   loading: Loading
   documents: Documents
+  drafts: Drafts
+  new_document: New Document
+  documents_not_found: Documents not Found
   accounts: Accounts
   edit_account: Edit Account
   new_team: New Team
@@ -802,6 +828,7 @@ en: &en
   welcome_to_docuseal: Welcome to DocuSeal
   start_a_quick_tour_to_learn_how_to_create_and_send_your_first_document: Start a quick tour to learn how to create and send your first document
   start_tour: Start Tour
+  product_tour: Product Tour
   name_a_z: Name A-Z
   recently_used: Recently used
   newest_first: Newest first
@@ -902,6 +929,15 @@ en: &en
   tablet: Tablet
   reset_default: Reset default
   smtp_settings_have_been_reset: SMTP settings have been reset.
+  send_test_email: Send Test Email
+  test_email_has_been_sent_to: Test email has been sent to %{email}
+  please_configure_smtp_settings_first: Please configure SMTP settings first
+  please_enter_a_valid_email_address: Please enter a valid email address
+  failed_to_send_test_email: 'Failed to send test email: %{error}'
+  a_test_email_will_be_sent_to_this_address: A test email will be sent to this address to verify your SMTP configuration
+  smtp_test_email_subject: SMTP Test Email
+  this_is_a_test_email: This is a test email.
+  if_you_received_this_email_your_smtp_settings_are_working_correctly: If you received this email, your SMTP settings are working correctly.
   send_signature_request_email: Send signature request email
   last_3_months: Last 3 months
   last_6_months: Last 6 months

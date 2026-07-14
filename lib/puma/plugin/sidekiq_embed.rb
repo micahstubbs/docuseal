@@ -44,7 +44,9 @@ Puma::Plugin.create do
         config.queues = sidekiq_config['queues']
         config.concurrency = ENV.fetch('SIDEKIQ_THREADS', 5).to_i
         config.merge!(sidekiq_config)
-        config[:max_retries] = 13
+        # the raw merge! above doesn't resolve per-environment sections, so pull
+        # max_retries from the current env section (production: 3) explicitly
+        config[:max_retries] = sidekiq_config.dig(Rails.env.to_s, :max_retries) || 13
 
         ActiveSupport.run_load_hooks(:sidekiq_config, config)
       end.instance_variable_get(:@config)

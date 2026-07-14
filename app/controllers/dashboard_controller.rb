@@ -10,6 +10,8 @@ class DashboardController < ApplicationController
   skip_authorization_check
 
   def index
+    return redirect_to documents_path if documents_home_enabled?
+
     if cookies.permanent[:dashboard_view] == 'submissions'
       SubmissionsDashboardController.dispatch(:index, request, response)
     else

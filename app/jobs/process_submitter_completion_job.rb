@@ -3,6 +3,8 @@
 class ProcessSubmitterCompletionJob
   include Sidekiq::Job
 
+  MAX_RETRY_ATTEMPTS = 5
+
   def perform(params = {})
     submitter = Submitter.find(params['submitter_id'])
     submission = submitter.submission
@@ -32,6 +34,14 @@ class ProcessSubmitterCompletionJob
       Submissions::EnsureAuditGenerated.call(submission)
 
       enqueue_completed_emails(submitter)
+
+      if Submissions::UploadToPaperless.configured?
+        UploadToPaperlessJob.perform_async('submission_id' => submitter.submission_id)
+      end
+
+      if Submissions::UploadToTwenty.configured?
+        UploadToTwentyJob.perform_async('submission_id' => submitter.submission_id)
+      end
     end
 
     create_completed_documents!(submitter)
@@ -81,6 +91,12 @@ class ProcessSubmitterCompletionJob
 
     completed_submitter
   rescue ActiveRecord::RecordNotUnique
+    attempts = (attempts || 0) + 1
+
+    raise if attempts >= MAX_RETRY_ATTEMPTS
+
+    sleep(0.1 * attempts)
+
     retry
   end
 
@@ -196,7 +212,7 @@ class ProcessSubmitterCompletionJob
 
           next unless sub
 
-          sub.completed_at.blank? && sub.sent_at.blank?
+          sub.completed_at.blank?
         end
       end
 
