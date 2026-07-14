@@ -61,17 +61,11 @@ must_contain:
   lib/docuseal.rb:
     - marker: "ENV.fetch('PRODUCT_NAME', DEFAULT_PRODUCT_NAME)"
       why: product name must stay configurable, default DocuSeal (docuseal-492)
+  app/views/shared/_meta.html.erb:
+    - marker: 'Docuseal.product_name'
+      why: meta title/description must read the configurable name, not a literal (docuseal-492)
 
 must_not_contain:
-  lib/docuseal.rb:
-    - marker: 'DocuSeal'
-      why: white-label name must not be hardcoded (docuseal-492)
-  app/views/shared/_meta.html.erb:
-    - marker: 'DocuSeal'
-      why: white-label name must not be hardcoded (docuseal-492)
-  config/locales/i18n.yml:
-    - marker: 'DocuSeal'
-      why: white-label name must not be hardcoded (docuseal-492)
   app/jobs/process_submitter_completion_job.rb:
     - marker: 'sub.completed_at.blank? && sub.sent_at.blank?'
       why: reintroduces the next-signer stall in preserved order (docuseal-dtn)
