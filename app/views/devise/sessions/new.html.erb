@@ -18,6 +18,7 @@
       <%= f.button button_title(title: t(:sign_in), disabled_with: t(:signing_in)), class: 'base-button' %>
     </div>
   <% end %>
+  <%= render 'external_magic_link' %>
   <%= render 'omniauthable' %>
   <%= render 'extra_links' %>
   <%= render 'devise/shared/links' %>

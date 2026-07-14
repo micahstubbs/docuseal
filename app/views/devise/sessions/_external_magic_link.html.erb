@@ -1,0 +1,23 @@
+<% if ENV['EXTERNAL_MAGIC_LINK_ISSUER_URL'].present? %>
+  <div class="mt-6" id="external_magic_link">
+    <% if params[:magic_link_sent].present? %>
+      <div class="alert bg-base-200 justify-center" id="external_magic_link_sent" role="status">
+        <%= t(:check_your_email_for_a_sign_in_link, default: 'Check your email for a sign-in link.') %>
+      </div>
+    <% else %>
+      <div class="divider"><%= t(:or, default: 'or') %></div>
+      <%= form_with url: ENV['EXTERNAL_MAGIC_LINK_ISSUER_URL'], method: :post, data: { turbo: false },
+                    html: { id: 'external_magic_link_form', class: 'space-y-4' } do |f| %>
+        <div class="form-control">
+          <%= f.label :email, t(:email), class: 'label', for: 'magic_link_email' %>
+          <%= f.email_field :email, id: 'magic_link_email', required: true, autocomplete: 'email',
+                                    class: 'base-input' %>
+        </div>
+        <div class="form-control">
+          <%= f.button t(:email_me_a_sign_in_link, default: 'Email me a sign-in link'),
+                       class: 'base-button' %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>
