@@ -23,6 +23,8 @@ Rails.application.routes.draw do
     end
   end
 
+  resource :external_token_session, only: %i[show], path: 'auth/external_token'
+
   namespace :api, defaults: { format: :json } do
     resource :user, only: %i[show]
     resources :attachments, only: %i[create]

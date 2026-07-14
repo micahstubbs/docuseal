@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_07_055354) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_13_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "btree_gin"
   enable_extension "pg_catalog.plpgsql"
@@ -255,6 +255,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_07_055354) do
     t.text "value", null: false
     t.index ["user_id", "key"], name: "index_encrypted_user_configs_on_user_id_and_key", unique: true
     t.index ["user_id"], name: "index_encrypted_user_configs_on_user_id"
+  end
+
+  create_table "external_auth_nonces", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "jti", null: false
+    t.index ["jti"], name: "index_external_auth_nonces_on_jti", unique: true
   end
 
   create_table "lock_events", force: :cascade do |t|
