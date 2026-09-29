@@ -1,0 +1,14 @@
+# Patch layer for dataroom-sign (docuseal-ok9).
+#
+# The full Dockerfile cannot rebuild today: its pdfium download
+# (docusealco/pdfium-binaries release 20260613) returns 404 and the layer is no
+# longer cached. When the only change since the running image is Ruby code, layer
+# the changed files onto that image instead:
+#
+#   docker build -f Dockerfile.patch --build-arg BASE=dataroom-sign:latest -t dataroom-sign:<tag> .
+#
+# List every changed file below; `git diff <image commit> HEAD --stat -- app config lib`
+# must show nothing else.
+ARG BASE=dataroom-sign:latest
+FROM ${BASE}
+COPY --chown=docuseal:docuseal app/controllers/submit_form_controller.rb /app/app/controllers/submit_form_controller.rb
