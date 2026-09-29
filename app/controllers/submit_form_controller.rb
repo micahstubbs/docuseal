@@ -37,6 +37,7 @@ class SubmitFormController < ApplicationController
     Submissions.preload_with_pages(submission)
 
     Submitters::MaybeUpdateDefaultValues.call(@submitter, current_user)
+    Submitters::PrefillTodayDates.call(@submitter)
 
     @attachments_index = build_attachments_index(submission)
 
