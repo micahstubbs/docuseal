@@ -41,3 +41,17 @@ Append-only log of debugging insights and non-obvious patterns.
 - Give each research subagent explicit `gh api` recipes and tell it its final message is data for a report — you get consistent, mergeable catalogs.
 - When multiple implementation subagents target the same branch, tell each to stage only its own files; a shared-worktree race can sweep one agent's uncommitted file into another's commit (harmless but mis-attributed).
 - Subagents can't run a toolchain the host lacks (a newer Ruby here); have them validate with `ruby -c`/`node --check`/YAML-parse and defer real specs to CI. Say so up front.
+
+## 2026-09-29: "Value is invalid" on the signing form was a CSRF session race (docuseal-ok9)
+
+**Symptom**: a signer uploaded a PNG signature and every submit showed "Value is invalid". The logs showed `PUT /s/:slug` 422 `ActionController::InvalidAuthenticityToken`; the attachment upload itself returned 200.
+
+**Root cause**: two signing links were opened at the same instant in a browser with no `_docu_seal_session` cookie yet. Each page load started its own session with its own CSRF token, and the later `Set-Cookie` replaced the earlier one. From then on the first tab's embedded token never matched, and every submit from it failed. A single tab, or a browser that already had the cookie, worked. That misdirected the first hypotheses toward the PNG and toward Brave.
+
+**Fix**: `skip_before_action :verify_authenticity_token, only: :update` in `SubmitFormController`. The slug is the credential, as in `SendSubmissionEmailController`. The regression spec in `spec/requests/forms_spec.rb` turns forgery protection on, because it is off in the test environment.
+
+**Prevention / technique**:
+- Map 422 → "Value is invalid" in the signing UI to the Rails log first; the UI hides the real error.
+- Reproduce CSRF with curl: GET the page with a cookie jar, then PUT with cookie+token, token only and cookie only (`probe-docuseal-csrf.sh` in the superradiant repo). Only cookie+token passed before the fix.
+- Browser cookie metadata (host, name, path, creation time) is plaintext in the Chromium `Cookies` SQLite; read a copy of it to rule out duplicate or shadowing cookies without touching values.
+- The full image build is broken (pdfium release 404, docuseal-q1d). Ship code-only fixes with `Dockerfile.patch` + `scripts/redeploy-dataroom-sign.sh`.
