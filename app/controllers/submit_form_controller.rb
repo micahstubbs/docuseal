@@ -6,6 +6,11 @@ class SubmitFormController < ApplicationController
   around_action :with_browser_locale, only: %i[show completed success delegated]
   skip_before_action :authenticate_user!
   skip_authorization_check
+  # The submitter slug is the credential for this form, so a session CSRF token adds
+  # no protection. Requiring one broke signing when two links were opened at once in a
+  # fresh browser: each page load started its own session, the later cookie replaced
+  # the earlier, and every submit from the first tab failed with 422 "Value is invalid".
+  skip_before_action :verify_authenticity_token, only: :update
 
   before_action :load_submitter, only: %i[show update completed]
   before_action :maybe_redirect_delegated, only: %i[show completed]
