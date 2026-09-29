@@ -12,3 +12,9 @@
 ARG BASE=dataroom-sign:latest
 FROM ${BASE}
 COPY --chown=docuseal:docuseal app/controllers/submit_form_controller.rb /app/app/controllers/submit_form_controller.rb
+# docuseal-mnb: per-signer notification email to the sender.
+COPY --chown=docuseal:docuseal app/jobs/process_submitter_completion_job.rb /app/app/jobs/process_submitter_completion_job.rb
+COPY --chown=docuseal:docuseal app/mailers/submitter_mailer.rb /app/app/mailers/submitter_mailer.rb
+COPY --chown=docuseal:docuseal app/models/account_config.rb /app/app/models/account_config.rb
+COPY --chown=docuseal:docuseal app/views/submitter_mailer/submitter_signed_notification_email.html.erb /app/app/views/submitter_mailer/submitter_signed_notification_email.html.erb
+COPY --chown=docuseal:docuseal config/locales/i18n.yml /app/config/locales/i18n.yml
