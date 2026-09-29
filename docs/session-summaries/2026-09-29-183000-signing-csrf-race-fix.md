@@ -19,3 +19,9 @@ Fixed "Value is invalid" on sign.dataroom.fast signing forms (founder report, 20
 
 ## Next Session Context
 Base patch builds on dataroom-sign:ok9 (or later) so this fix is kept. A concurrent agent is adding completion-notification emails in this repo.
+
+## Follow-up: signing-date default (docuseal-svp)
+
+- 5cc24d7e spec, 12816741 impl: blank fields named Date / Date signed / Signing date / Signed on (or unnamed) prefill with today in the account timezone (Pacific) when the form opens; in memory only, stored on submit. Birthday and other date fields untouched.
+- Deployed dataroom-sign:svp (built on mnb, so the CSRF fix and completion notifications are kept) at 2026-09-29T18:37:36Z; previous container dataroom-sign-old-20260929-113733 kept stopped.
+- Verified in production: data-values carried 2026-09-29 for a throwaway submission, which was then archived.
