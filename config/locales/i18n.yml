@@ -313,6 +313,11 @@ en: &en
   email_notifications: Email Notifications
   receive_notification_emails_on_completed_submission: Receive notification emails on completed submission
   completed_documents_notification_bcc_address: Completed documents notification BCC address
+  name_signed_document: '%{name} signed "%{document}"'
+  name_signed_document_all_parties_signed: '%{name} signed "%{document}" - all parties have signed'
+  signer_signed_document_on_date_html: '<b>%{signer}</b> signed <b>%{document}</b> on %{date}.'
+  still_waiting_on_names: 'Still waiting on: %{names}'
+  all_parties_have_now_signed: All parties have now signed.
   sign_request_email_reminders: Sign Request Email Reminders
   send_automatic_email_reminders_to_your_recipients: Send automatic email reminders to your recipients.
   first_reminder_in: First reminder in
