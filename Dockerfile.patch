@@ -18,3 +18,4 @@ COPY --chown=docuseal:docuseal app/mailers/submitter_mailer.rb /app/app/mailers/
 COPY --chown=docuseal:docuseal app/models/account_config.rb /app/app/models/account_config.rb
 COPY --chown=docuseal:docuseal app/views/submitter_mailer/submitter_signed_notification_email.html.erb /app/app/views/submitter_mailer/submitter_signed_notification_email.html.erb
 COPY --chown=docuseal:docuseal config/locales/i18n.yml /app/config/locales/i18n.yml
+COPY --chown=docuseal:docuseal lib/submitters/prefill_today_dates.rb /app/lib/submitters/prefill_today_dates.rb
