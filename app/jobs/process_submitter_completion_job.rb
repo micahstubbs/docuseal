@@ -9,7 +9,7 @@ class ProcessSubmitterCompletionJob
     submitter = Submitter.find(params['submitter_id'])
     submission = submitter.submission
 
-    create_completed_submitter!(submitter)
+    completed_submitter = create_completed_submitter!(submitter)
 
     is_last =
       if params.key?('is_last')
@@ -23,6 +23,8 @@ class ProcessSubmitterCompletionJob
         !incomplete.exists? &&
           submitter.completed_at == submission.submitters.maximum(:completed_at)
       end
+
+    enqueue_signed_notification_emails(submitter, completed_submitter)
 
     Submissions::EnsureResultGenerated.call(submitter)
 
@@ -157,6 +159,28 @@ class ProcessSubmitterCompletionJob
     end
 
     maybe_enqueue_copy_emails(submitter)
+  end
+
+  # Fork (docuseal-mnb): email the addresses in the account's
+  # `submitter_signed_notification_emails` config each time a signer completes
+  # their part. Unlike `completed_email`, this fires for every signer (not only
+  # when the whole submission completes) and ignores the submission-level
+  # `send_email: false` flag, which governs emails to signers, not to the sender.
+  # Called only when the CompletedSubmitter row is first created, so job retries
+  # do not send duplicates.
+  def enqueue_signed_notification_emails(submitter, completed_submitter)
+    return unless completed_submitter.previously_new_record?
+    return if submitter.viewer?
+
+    recipients = submitter.account.account_configs
+                          .find_by(key: AccountConfig::SUBMITTER_SIGNED_NOTIFICATION_EMAILS_KEY)&.value
+
+    recipients.to_s.scan(User::EMAIL_REGEXP).uniq(&:downcase).each do |to|
+      # A recipient who is the signer already knows they signed.
+      next if submitter.email.present? && submitter.email.casecmp?(to)
+
+      SubmitterMailer.submitter_signed_notification_email(submitter, to:).deliver_later!
+    end
   end
 
   def maybe_enqueue_copy_emails(submitter)

@@ -1,0 +1,8 @@
+<p><%= t('hi_there') %>,</p>
+<p><%= t('signer_signed_document_on_date_html', signer: @signer_label, document: @document_name, date: "#{l(@completed_at, format: :long)} #{@completed_at.strftime('%Z')}") %></p>
+<% if @pending_submitters.any? %>
+  <p><%= t('still_waiting_on_names', names: @pending_submitters.map { |s| s.name.presence || s.email.presence || s.phone }.join(', ')) %></p>
+<% else %>
+  <p><%= t('all_parties_have_now_signed') %></p>
+<% end %>
+<p><%= link_to submission_url(@submission), submission_url(@submission) %></p>

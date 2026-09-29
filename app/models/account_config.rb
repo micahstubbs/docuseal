@@ -28,6 +28,7 @@ class AccountConfig < ApplicationRecord
   SUBMITTER_COMPLETED_EMAIL_KEY = 'submitter_completed_email'
   SUBMITTER_DOCUMENTS_COPY_EMAIL_KEY = 'submitter_documents_copy_email'
   BCC_EMAILS = 'bcc_emails'
+  SUBMITTER_SIGNED_NOTIFICATION_EMAILS_KEY = 'submitter_signed_notification_emails'
   FORCE_MFA = 'force_mfa'
   ALLOW_TYPED_SIGNATURE = 'allow_typed_signature'
   ALLOW_TO_RESUBMIT = 'allow_to_resubmit'

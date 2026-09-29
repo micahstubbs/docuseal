@@ -11,6 +11,12 @@ class SubmitterMailerPreview < ActionMailer::Preview
     SubmitterMailer.completed_email(submitter, User.last)
   end
 
+  def submitter_signed_notification_email
+    submitter = Submitter.where.not(completed_at: nil).last
+
+    SubmitterMailer.submitter_signed_notification_email(submitter, to: 'owner@example.com')
+  end
+
   def declined_email
     submitter = Submitter.where.not(declined_at: nil).last
 

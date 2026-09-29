@@ -65,6 +65,69 @@ RSpec.describe ProcessSubmitterCompletionJob do
         .exactly(described_class::MAX_RETRY_ATTEMPTS).times
     end
 
+    it 'sends no signed notification when no address is configured' do
+      allow(SubmitterMailer).to receive(:submitter_signed_notification_email)
+
+      described_class.new.perform('submitter_id' => submitter.id)
+
+      expect(SubmitterMailer).not_to have_received(:submitter_signed_notification_email)
+    end
+
+    # docuseal-mnb: the sender got no email when a counterparty signed, because
+    # `completed_email` only fires once the whole submission completes (the sender
+    # countersigns last) and is suppressed by the submission's `send_email: false`.
+    context 'when signed notification emails are configured' do
+      let(:template) { create(:template, account:, author: user, submitter_count: 2) }
+      let(:submission) do
+        create(:submission, template:, created_by_user: user, preferences: { 'send_email' => false })
+      end
+      let(:submitter) do
+        create(:submitter, submission:, uuid: submission.template_submitters.first['uuid'],
+                           email: 'signer@example.com', completed_at: Time.current)
+      end
+      let!(:countersigner) do
+        create(:submitter, submission:, uuid: submission.template_submitters.second['uuid'],
+                           email: 'owner@example.com')
+      end
+      let(:message) { instance_double(ActionMailer::MessageDelivery, deliver_later!: true) }
+
+      before do
+        submission.reload.update!(completed_at: nil)
+
+        create(:account_config, account:, key: AccountConfig::SUBMITTER_SIGNED_NOTIFICATION_EMAILS_KEY,
+                                value: 'owner@example.com, Other@Example.com')
+
+        allow(SubmitterMailer).to receive(:submitter_signed_notification_email).and_return(message)
+      end
+
+      it 'emails every configured address when a signer completes, despite send_email: false' do
+        described_class.new.perform('submitter_id' => submitter.id)
+
+        expect(SubmitterMailer).to have_received(:submitter_signed_notification_email)
+          .with(submitter, to: 'owner@example.com')
+        expect(SubmitterMailer).to have_received(:submitter_signed_notification_email)
+          .with(submitter, to: 'Other@Example.com')
+        expect(message).to have_received(:deliver_later!).twice
+      end
+
+      it 'does not email again when the job runs twice for the same signer' do
+        2.times { described_class.new.perform('submitter_id' => submitter.id) }
+
+        expect(SubmitterMailer).to have_received(:submitter_signed_notification_email).twice
+      end
+
+      it 'does not notify a recipient about their own signature' do
+        submitter
+        countersigner.update!(completed_at: Time.current)
+        Submissions.maybe_update_completed_at(submission.reload)
+
+        described_class.new.perform('submitter_id' => countersigner.id)
+
+        expect(SubmitterMailer).to have_received(:submitter_signed_notification_email)
+          .once.with(countersigner, to: 'Other@Example.com')
+      end
+    end
+
     context 'when submitters order is preserved' do
       let(:template) { create(:template, account:, author: user, submitter_count: 2) }
       let(:submission) do

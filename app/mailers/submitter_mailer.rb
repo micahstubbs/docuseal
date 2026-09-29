@@ -121,6 +121,29 @@ class SubmitterMailer < ApplicationMailer
     end
   end
 
+  # Fork (docuseal-mnb): per-signer "X signed" notice for the sender; see
+  # ProcessSubmitterCompletionJob#enqueue_signed_notification_emails.
+  def submitter_signed_notification_email(submitter, to:)
+    @current_account = submitter.submission.account
+    @submitter = submitter
+    @submission = submitter.submission
+
+    @document_name = @submission.name.presence || @submission.template&.name
+    @signer_label = signer_label(submitter)
+    @pending_submitters =
+      @submission.submitters.order(:id).reject { |s| s.completed_at? || s.declined_at? || s.viewer? }
+    @completed_at = (submitter.completed_at || Time.current).in_time_zone(@current_account.timezone)
+
+    assign_message_metadata('submitter_signed_notification', submitter)
+
+    I18n.with_locale(@current_account.locale) do
+      key = @pending_submitters.empty? ? :name_signed_document_all_parties_signed : :name_signed_document
+      subject = I18n.t(key, name: submitter_display_name(submitter), document: @document_name)
+
+      mail(from: from_address_for_submitter(submitter), to:, subject:)
+    end
+  end
+
   def declined_email(submitter, user)
     @current_account = submitter.submission.account
     @submitter = submitter
@@ -242,6 +265,16 @@ class SubmitterMailer < ApplicationMailer
     end
 
     documents
+  end
+
+  def submitter_display_name(submitter)
+    submitter.name.presence || submitter.email.presence || submitter.phone
+  end
+
+  def signer_label(submitter)
+    return submitter_display_name(submitter) if submitter.name.blank? || submitter.email.blank?
+
+    "#{submitter.name} (#{submitter.email})"
   end
 
   def normalize_user_email(user)
