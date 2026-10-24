@@ -19,3 +19,8 @@ COPY --chown=docuseal:docuseal app/models/account_config.rb /app/app/models/acco
 COPY --chown=docuseal:docuseal app/views/submitter_mailer/submitter_signed_notification_email.html.erb /app/app/views/submitter_mailer/submitter_signed_notification_email.html.erb
 COPY --chown=docuseal:docuseal config/locales/i18n.yml /app/config/locales/i18n.yml
 COPY --chown=docuseal:docuseal lib/submitters/prefill_today_dates.rb /app/lib/submitters/prefill_today_dates.rb
+# dataroom bd-jo10: Umami analytics, gated on UMAMI_WEBSITE_ID.
+COPY --chown=docuseal:docuseal app/controllers/application_controller.rb /app/app/controllers/application_controller.rb
+COPY --chown=docuseal:docuseal app/views/layouts/_head_tags.html.erb /app/app/views/layouts/_head_tags.html.erb
+COPY --chown=docuseal:docuseal app/views/shared/_umami.html.erb /app/app/views/shared/_umami.html.erb
+COPY --chown=docuseal:docuseal public/umami-events.js /app/public/umami-events.js

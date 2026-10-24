@@ -16,8 +16,10 @@ ENV_FILE="$ENV_DIR/env-$TS"
 mkdir -p "$ENV_DIR" && chmod 700 "$ENV_DIR"
 umask 077
 docker inspect "$NAME" --format '{{range .Config.Env}}{{println .}}{{end}}' \
-  | grep -E '^(FORCE_SSL|PRODUCT_NAME|EXTERNAL_TOKEN_AUTH_SECRET|EXTERNAL_MAGIC_LINK_ISSUER_URL)=' >> "$ENV_FILE"
-[ "$(wc -l < "$ENV_FILE")" -eq 4 ] || { echo "expected 4 runtime env vars in $ENV_FILE"; exit 1; }
+  | grep -E '^(FORCE_SSL|PRODUCT_NAME|EXTERNAL_TOKEN_AUTH_SECRET|EXTERNAL_MAGIC_LINK_ISSUER_URL|UMAMI_WEBSITE_ID|UMAMI_SCRIPT_URL|UMAMI_CONNECT_SRC)=' >> "$ENV_FILE"
+[ "$(grep -cE '^(FORCE_SSL|PRODUCT_NAME|EXTERNAL_TOKEN_AUTH_SECRET|EXTERNAL_MAGIC_LINK_ISSUER_URL)=' "$ENV_FILE")" -eq 4 ] \
+  || { echo "expected 4 required runtime env vars in $ENV_FILE"; exit 1; }
+# Optional: UMAMI_WEBSITE_ID (analytics, dataroom bd-erwh) is carried over when set.
 docker image inspect "$IMAGE" >/dev/null
 docker stop "$NAME" >/dev/null
 docker rename "$NAME" "$NAME-old-$TS"

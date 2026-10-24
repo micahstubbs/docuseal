@@ -149,6 +149,11 @@ class ApplicationController < ActionController::Base
       policy.worker_src :self, :blob
       policy.connect_src :self
 
+      if ENV['UMAMI_WEBSITE_ID'].present?
+        policy.directives['script-src'] << URI.join(ENV.fetch('UMAMI_SCRIPT_URL', 'https://cloud.umami.is/script.js'), '/').to_s.chomp('/')
+        policy.directives['connect-src'] << ENV.fetch('UMAMI_CONNECT_SRC', 'https://*.umami.is')
+      end
+
       policy.directives['connect-src'] << 'ws:' if Rails.env.development?
     end
   end

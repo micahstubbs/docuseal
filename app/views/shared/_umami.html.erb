@@ -1,0 +1,13 @@
+<%# Umami analytics, off unless UMAMI_WEBSITE_ID is set. The tracker drops query
+    strings and hashes, and public/umami-events.js rewrites signer slugs out of
+    every URL before a beacon leaves the page. Event data carries ids, field
+    types and counts only, never field values, names or email addresses. %>
+<% if (umami_website_id = ENV['UMAMI_WEBSITE_ID'].presence) %>
+  <% umami_context = { page: "#{controller_name}##{action_name}" } %>
+  <% if @submitter.is_a?(Submitter) %>
+    <% umami_context.merge!(submission_id: @submitter.submission_id, template_id: @submitter.submission&.template_id, submitter_id: @submitter.id, submitter_status: @submitter.status) %>
+  <% end %>
+  <meta name="umami-context" content="<%= umami_context.to_json %>">
+  <script defer src="/umami-events.js?v=2" nonce="<%= content_security_policy_nonce %>"></script>
+  <script defer src="<%= ENV.fetch('UMAMI_SCRIPT_URL', 'https://cloud.umami.is/script.js') %>" data-website-id="<%= umami_website_id %>" data-exclude-search="true" data-exclude-hash="true" data-before-send="docusealUmamiBeforeSend" nonce="<%= content_security_policy_nonce %>"></script>
+<% end %>
