@@ -1,4 +1,11 @@
 const en = {
+  saved_on_this_device: 'Saved on this device',
+  save_on_this_device: 'Save on this device',
+  use_saved_image: 'Use saved image',
+  remove_saved_image: 'Remove',
+  saved_image_could_not_be_used: 'This saved image could not be used. Please draw, type or upload again.',
+  saved_image_could_not_be_removed: 'This image could not be removed from this device. Please try again.',
+  image_could_not_be_saved_on_this_device: 'This image could not be saved on this device. You can still sign.',
   step: 'Step',
   form_progress: 'Form progress',
   close: 'Close',

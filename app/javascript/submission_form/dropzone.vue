@@ -163,9 +163,10 @@ export default {
     },
     async uploadFiles (files) {
       this.isLoading = true
+      const uploadedFiles = Array.from(files)
 
       return await Promise.all(
-        Array.from(files).map(async (file) => {
+        uploadedFiles.map(async (file, index) => {
           const formData = new FormData()
 
           if (this.dryRun) {
@@ -193,6 +194,8 @@ export default {
               alert(e.message)
             }
 
+            uploadedFiles[index] = file
+
             formData.append('file', file)
             formData.append('submitter_slug', this.submitterSlug)
             formData.append('name', 'attachments')
@@ -212,7 +215,7 @@ export default {
           }
         })).then((result) => {
         if (result && result[0]) {
-          this.$emit('upload', result)
+          this.$emit('upload', result, uploadedFiles)
         }
       }).finally(() => {
         this.isLoading = false

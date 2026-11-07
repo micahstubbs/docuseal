@@ -40,3 +40,6 @@ dump.rdb
 *.onnx
 
 /.claude/worktrees
+
+# Originals retained by the owner-approved archive-before-edit helper.
+.archive-before-edit/

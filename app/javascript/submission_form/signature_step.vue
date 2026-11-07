@@ -3,6 +3,14 @@
     dir="auto"
     class="relative"
   >
+    <SavedSignatures
+      v-if="!dryRun"
+      ref="savedSignatures"
+      kind="signature"
+      :field-id="field.uuid"
+      :signer-name="submitter.name || ''"
+      :select-file="selectSavedImage"
+    />
     <div
       class="flex justify-between items-end w-full mb-3.5 md:mb-4"
       :class="{ 'mb-2': !field.description }"
@@ -168,11 +176,12 @@
     >
     <FileDropzone
       v-if="format === 'upload' && !modelValue && !computedPreviousValue"
+      ref="uploadDropzone"
       :message="`${t('upload')} ${field.name || t('signature')}`"
       :submitter-slug="submitterSlug"
       :dry-run="dryRun"
       :accept="'image/*'"
-      @upload="[$emit('attached', $event[0]), $emit('update:model-value', $event[0].uuid)]"
+      @upload="onUploadSignature"
     />
     <div
       v-else
@@ -353,6 +362,7 @@ import SignaturePad from 'signature_pad'
 import AppearsOn from './appears_on'
 import FileDropzone from './dropzone'
 import MarkdownContent from './markdown_content'
+import SavedSignatures from './saved_signatures.vue'
 import { v4 } from 'uuid'
 
 let fontLoadPromise = null
@@ -362,6 +372,7 @@ const scale = 3
 export default {
   name: 'SignatureStep',
   components: {
+    SavedSignatures,
     AppearsOn,
     IconReload,
     FileDropzone,
@@ -521,6 +532,7 @@ export default {
       }
 
       this.pad.addEventListener('endStroke', () => {
+        this.savedImageFile = null
         this.isSignatureStarted = true
 
         this.$emit('start')
@@ -609,6 +621,8 @@ export default {
       }
     },
     remove () {
+      this.pendingImage = null
+      this.savedImageFile = null
       this.$emit('update:model-value', '')
 
       this.isUsePreviousValue = false
@@ -677,6 +691,8 @@ export default {
       })
     },
     clear () {
+      this.pendingImage = null
+      this.savedImageFile = null
       this.pad.clear()
 
       this.isSignatureStarted = false
@@ -687,6 +703,7 @@ export default {
       }
     },
     updateWrittenSignature (e) {
+      this.savedImageFile = null
       this.isSignatureStarted = !!e.target.value
 
       const canvas = this.$refs.canvas
@@ -796,24 +813,50 @@ export default {
 
       img.src = this.signatureSrc
     },
-    drawImage (event) {
+    async selectSavedImage (file) {
+      if (this.format === 'upload') {
+        this.remove()
+        await this.$nextTick()
+        this.pendingImage = this.$refs.uploadDropzone.uploadFiles([file])
+        await this.pendingImage
+      } else {
+        await this.drawImage({ target: { files: [file] } })
+        this.savedImageFile = file
+      }
+    },
+    onUploadSignature (attachments, files) {
+      this.pendingImage = null
+      this.savedImageFile = files[0]
+      this.$emit('attached', attachments[0])
+      this.$emit('update:model-value', attachments[0].uuid)
+    },
+    async drawImage (event) {
+      if (!event.target.files[0]) return
+
       this.remove()
       this.clear()
+      this.hideQr()
+      // These formats have no draw/type toggle, so keep their text input usable.
+      if (!['typed', 'typed_or_upload'].includes(this.format)) this.isTextSignature = false
       this.isSignatureStarted = true
 
-      this.drawOnCanvas(event.target.files[0], this.$refs.canvas)
+      this.pendingImage = this.drawOnCanvas(event.target.files[0], this.$refs.canvas)
 
       this.uploadImageInputKey = Math.random().toString()
+
+      await this.pendingImage
     },
     drawOnCanvas (file, canvas) {
-      if (file && file.type.match('image.*')) {
+      return new Promise((resolve, reject) => {
+        if (!file || !file.type.match('image.*')) return reject(new Error('Invalid image'))
+
         const reader = new FileReader()
 
+        reader.onerror = reject
         reader.onload = (event) => {
           const img = new Image()
 
-          img.src = event.target.result
-
+          img.onerror = reject
           img.onload = () => {
             const context = canvas.getContext('2d')
 
@@ -844,12 +887,15 @@ export default {
               context.drawImage(img, x, y, targetWidth, targetHeight)
 
               this.$emit('start')
+              resolve()
             }, 50)
           }
+
+          img.src = event.target.result
         }
 
         reader.readAsDataURL(file)
-      }
+      })
     },
     maybeSetSignedUuid (signedUuid) {
       try {
@@ -873,7 +919,10 @@ export default {
       }
     },
     async submit () {
+      await this.pendingImage
+
       if (this.modelValue || this.computedPreviousValue) {
+        if (this.savedImageFile) await this.$refs.savedSignatures?.remember(this.savedImageFile)
         if (this.touchAttachmentUuid && this.computedPreviousValue === this.touchAttachmentUuid && !Object.values(this.values).includes(this.touchAttachmentUuid)) {
           this.isTouchAttachment = true
           this.$emit('touch-attachment', this.touchAttachmentUuid)
@@ -936,13 +985,15 @@ export default {
               method: 'POST',
               body: formData
             }).then(async (resp) => {
-              if (resp.status === 422 || resp.status === 500) {
+              if (!resp.ok) {
                 const data = await resp.json()
 
                 return Promise.reject(new Error(data.error))
               }
 
               const attachment = await resp.json()
+
+              await this.$refs.savedSignatures?.remember(this.savedImageFile || file)
 
               this.$emit('attached', attachment)
               this.$emit('update:model-value', attachment.uuid)

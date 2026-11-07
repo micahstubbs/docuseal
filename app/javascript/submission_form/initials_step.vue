@@ -1,5 +1,13 @@
 <template>
   <div dir="auto">
+    <SavedSignatures
+      v-if="!dryRun"
+      ref="savedSignatures"
+      kind="initials"
+      :field-id="field.uuid"
+      :signer-name="submitter.name || ''"
+      :select-file="selectSavedImage"
+    />
     <div
       class="flex justify-between items-end w-full mb-3.5 md:mb-4"
       :class="{ 'mb-2': !field.description }"
@@ -185,12 +193,14 @@ import SignaturePad from 'signature_pad'
 import AppearsOn from './appears_on'
 import MarkdownContent from './markdown_content'
 import SignatureStep from './signature_step'
+import SavedSignatures from './saved_signatures.vue'
 
 const scale = 3
 
 export default {
   name: 'InitialsStep',
   components: {
+    SavedSignatures,
     IconUpload,
     AppearsOn,
     IconReload,
@@ -278,6 +288,7 @@ export default {
       }
 
       this.pad.addEventListener('beginStroke', () => {
+        this.savedImageFile = null
         this.isInitialsStarted = true
 
         this.$emit('start')
@@ -311,22 +322,35 @@ export default {
     this.intersectionObserver?.disconnect()
   },
   methods: {
+    async selectSavedImage (file) {
+      await this.drawImage({ target: { files: [file] } })
+      this.savedImageFile = file
+    },
     drawOnCanvas: SignatureStep.methods.drawOnCanvas,
-    drawImage (event) {
+    async drawImage (event) {
+      if (!event.target.files[0]) return
+
       this.remove()
+      this.clear()
+      this.isDrawInitials = true
       this.isInitialsStarted = true
 
-      this.drawOnCanvas(event.target.files[0], this.$refs.canvas)
+      this.pendingImage = this.drawOnCanvas(event.target.files[0], this.$refs.canvas)
 
       this.uploadImageInputKey = Math.random().toString()
+
+      await this.pendingImage
     },
     remove () {
+      this.savedImageFile = null
       this.$emit('update:model-value', '')
 
       this.isUsePreviousValue = false
       this.isInitialsStarted = false
     },
     clear () {
+      this.pendingImage = null
+      this.savedImageFile = null
       this.pad.clear()
 
       this.isInitialsStarted = false
@@ -336,6 +360,7 @@ export default {
       }
     },
     updateWrittenInitials (e) {
+      this.savedImageFile = null
       this.isInitialsStarted = !!e.target.value
 
       const canvas = this.$refs.canvas
@@ -398,6 +423,8 @@ export default {
       }
     },
     async submit () {
+      await this.pendingImage
+
       if (this.modelValue || this.computedPreviousValue) {
         if (this.computedPreviousValue) {
           this.$emit('update:model-value', this.computedPreviousValue)
@@ -435,13 +462,15 @@ export default {
               method: 'POST',
               body: formData
             }).then(async (resp) => {
-              if (resp.status === 422 || resp.status === 500) {
+              if (!resp.ok) {
                 const data = await resp.json()
 
                 return Promise.reject(new Error(data.error))
               }
 
               const attachment = await resp.json()
+
+              await this.$refs.savedSignatures?.remember(this.savedImageFile || file)
 
               this.$emit('attached', attachment)
               this.$emit('update:model-value', attachment.uuid)
